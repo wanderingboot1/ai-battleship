@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { GoldCoin } from './GoldCoin'
 import { decideTurn } from '../ai/opponent'
 import {
   BROADSIDE_SHOTS,
@@ -302,7 +303,7 @@ export function BattleScreen({
           </p>
           {game.winner === 'human' && (
             <p className="gold-earned">
-              🪙 +{WIN_REWARD} gold · {gold} total. Spend it at the Trading Post.
+              <GoldCoin /> +{WIN_REWARD} gold · {gold} total. Spend it at the Trading Post.
             </p>
           )}
           <dl className="stats">

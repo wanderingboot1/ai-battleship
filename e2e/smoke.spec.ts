@@ -155,9 +155,9 @@ test("two open tabs never overwrite each other's gold or pets", async ({ context
   for (const p of [a, b]) await p.getByRole('button', { name: /Trading Post/ }).click()
 
   await a.locator('.pet-card', { hasText: 'Dragon' }).getByRole('button', { name: /Buy/ }).click()
-  await expect(b.locator('.gold-balance')).toHaveText(/🪙 50 gold/)
+  await expect(b.locator('.gold-balance')).toHaveText(/^\s*50 gold$/)
   await b.locator('.pet-card', { hasText: 'Parrot' }).getByRole('button', { name: /Buy/ }).click()
-  await expect(b.locator('.gold-balance')).toHaveText(/🪙 0 gold/)
+  await expect(b.locator('.gold-balance')).toHaveText(/^\s*0 gold$/)
 
   await a.reload()
   await a.getByRole('button', { name: /Trading Post/ }).click()
