@@ -15,3 +15,12 @@ Raw notes on real defects found during development. These get condensed into `DE
 - **Root cause:** the grid used `1fr` tracks, whose minimum size is the content's size; the ship SVGs asked for more height than one cell, so CSS grew those rows.
 - **Fix:** use `minmax(0, 1fr)` tracks and let ship SVGs shrink (`min-height: 0`).
 - **Verified:** re-took desktop and mobile screenshots for all three themes; rows are equal.
+
+## 3. Horizontal ships looked shorter than their length (first playtest, found by Blake)
+- **Plain English:** a five-square ship placed sideways only covered about two squares, but looked correct when placed upright.
+- **Repro:** Roman Navy → place the Quinquereme horizontally on row J. The drawing covered roughly 2 of its 5 squares; rotating to vertical covered all 5.
+- **Expected:** the drawn ship spans exactly the squares it occupies, in either orientation.
+- **Root cause:** each ship had `padding: 6%`. In CSS, percentage padding is always measured from the element's *width*, even for top and bottom. A horizontal ship's box is five cells wide, so the padding ate most of its one-cell height, and the drawing (which keeps its proportions) shrank to fit. A vertical ship's box is one cell wide, so its padding was tiny and nothing looked wrong.
+- **Fix:** removed the padding; the ship artwork already has its own margin built in (`src/styles.css`).
+- **Verified:** new Playwright test "ships fill their squares in both orientations" measures the drawn hull: it failed before the fix (89px drawn vs a required 206px for a 5-cell ship) and passes after, on desktop and mobile. Re-took screenshots for all themes. Full suite: lint, typecheck, 26 unit tests, 12/12 browser tests.
+- **Why tests missed it:** the earlier browser tests checked behaviour (placement, firing), not drawing size. the short ships were visible in my own screenshot review, but I missed them.

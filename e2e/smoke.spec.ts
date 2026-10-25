@@ -75,3 +75,19 @@ test('full game reaches a result screen with rematch and change theme', async ({
   await page.getByRole('button', { name: 'Yes' }).click()
   await expect(page.getByText('Choose your opponent')).toBeVisible()
 })
+
+test('ships fill their squares in both orientations', async ({ page }) => {
+  await page.goto('./')
+  await page.getByRole('button', { name: /Roman Navy/ }).click()
+  const board = page.getByRole('group', { name: /placement/ })
+  await board.locator('[data-cell="J1"]').click()
+  await page.getByRole('button', { name: /Rotate/ }).click()
+  await board.locator('[data-cell="A10"]').click()
+
+  const cell = (await board.locator('[data-cell="E5"]').boundingBox())!
+  const sprites = page.locator('.ship .ship-hull')
+  const carrier = (await sprites.nth(0).boundingBox())!
+  const battleship = (await sprites.nth(1).boundingBox())!
+  expect(carrier.width).toBeGreaterThan(cell.width * 5 * 0.9)
+  expect(battleship.height).toBeGreaterThan(cell.height * 4 * 0.9)
+})
