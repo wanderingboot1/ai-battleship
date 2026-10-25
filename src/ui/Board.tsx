@@ -42,6 +42,8 @@ export function Board(props: BoardProps) {
   const { themeId, label, marks, ships = [], sunkCells, lastShot, preview, onCellClick, onCellHover } = props
   const interactive = !!onCellClick
   const cells = Array.from({ length: CELL_COUNT }, (_, c) => c)
+  const lastMark = lastShot != null ? marks?.[lastShot] : undefined
+  const sinking = lastShot != null ? ships.find(({ ship, sunk }) => sunk && ship.cells.includes(lastShot))?.ship : undefined
 
   return (
     <div className={`board ${interactive ? 'board-interactive' : ''} ${props.className ?? ''}`}>
@@ -86,7 +88,7 @@ export function Board(props: BoardProps) {
         {ships.map(({ ship, sunk }) => (
           <div
             key={ship.type}
-            className={`ship ${sunk ? 'ship-sunk' : ''}`}
+            className={`ship ${sunk ? 'ship-sunk' : ''} ${ship === sinking ? 'ship-sinking' : ''}`}
             style={gridArea(ship.cells)}
             aria-hidden="true"
           >
@@ -123,8 +125,44 @@ export function Board(props: BoardProps) {
             </div>
           ),
         )}
+
+        {lastShot != null && lastMark === 'miss' && (
+          <div key={`splash${lastShot}`} className="fx fx-splash" style={cellPos(lastShot)} aria-hidden="true" />
+        )}
+        {lastShot != null && lastMark === 'hit' && !sinking && (
+          <div key={`blast${lastShot}`} className="fx fx-blast" style={cellPos(lastShot)} aria-hidden="true">
+            <BlastArt />
+          </div>
+        )}
+        {sinking?.cells.map((cell, i) => (
+          <div
+            key={`sink${lastShot}-${cell}`}
+            className="fx fx-blast fx-blast-big"
+            style={{ ...cellPos(cell), animationDelay: `${i * 0.13}s` }}
+            aria-hidden="true"
+          >
+            <BlastArt />
+          </div>
+        ))}
       </div>
       {props.children}
     </div>
+  )
+}
+
+function BlastArt() {
+  const rays = Array.from({ length: 8 }, (_, i) => (i * Math.PI) / 4)
+  return (
+    <svg viewBox="-50 -50 100 100">
+      <circle r="22" className="fx-flash" />
+      <circle r="12" className="fx-core" />
+      {rays.map((a) => (
+        <path
+          key={a}
+          d={`M${Math.cos(a) * 18} ${Math.sin(a) * 18} L${Math.cos(a) * 44} ${Math.sin(a) * 44}`}
+          className="fx-ray"
+        />
+      ))}
+    </svg>
   )
 }
