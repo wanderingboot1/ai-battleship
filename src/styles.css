@@ -214,6 +214,10 @@ button.cell[aria-disabled='true'] { cursor: default; }
 
 /* Trading Post and co-captains */
 .shop-link { margin-bottom: 1.25rem; }
+.resume-card { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1.25rem; text-align: left; margin: 0 0 1.5rem; padding: 0.9rem 1.1rem; border-radius: 12px; border: 2px solid var(--accent); background: rgba(255, 255, 255, 0.07); }
+.resume-card h2 { margin: 0 0 0.2rem; font-size: 1.1rem; }
+.resume-card p { margin: 0; color: var(--ink-dim); font-size: 0.92rem; }
+.resume-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .shop { text-align: center; }
 .gold-balance { font-size: 1.4rem; font-weight: 800; color: var(--accent) !important; }
 .pet-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin: 1rem 0 1.5rem; }

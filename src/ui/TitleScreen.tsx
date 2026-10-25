@@ -4,6 +4,7 @@ import { THEMES, THEME_ORDER } from '../themes'
 import type { ThemeId } from '../themes/types'
 
 interface Props {
+  resume: { label: string; detail: string; onResume: () => void; onDiscard: () => void } | null
   gold: number
   onShop: () => void
   mode: GameMode
@@ -16,7 +17,7 @@ const MODES: { id: GameMode; name: string; blurb: string }[] = [
   { id: 'special', name: 'Special', blurb: 'Each side gets 3 random single-use abilities.' },
 ]
 
-export function TitleScreen({ gold, onShop, mode, onModeChange, onChoose }: Props) {
+export function TitleScreen({ resume, gold, onShop, mode, onModeChange, onChoose }: Props) {
   return (
     <div className="title-screen">
       <header className="title-hero">
@@ -26,6 +27,25 @@ export function TitleScreen({ gold, onShop, mode, onModeChange, onChoose }: Prop
           🏪 Trading Post · 🪙 {gold} gold
         </button>
       </header>
+
+      {resume && (
+        <section className="resume-card" aria-label="Game in progress">
+          <div>
+            <h2>⚓ Game in progress</h2>
+            <p>
+              {resume.label} · {resume.detail}
+            </p>
+          </div>
+          <div className="resume-actions">
+            <button type="button" className="btn btn-primary" onClick={resume.onResume}>
+              Resume game
+            </button>
+            <button type="button" className="btn btn-quiet" onClick={resume.onDiscard}>
+              Start new game
+            </button>
+          </div>
+        </section>
+      )}
 
       <h2 className="choose-heading">1. Choose a mode</h2>
       <div className="mode-picker" role="radiogroup" aria-label="Game mode">

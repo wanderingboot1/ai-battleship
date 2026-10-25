@@ -1,12 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
-import type { GameMode } from '../engine/game'
+import { isSunk, type GameMode, type GameState } from '../engine/game'
 import type { Ship } from '../engine/types'
 import { awardWin, buyPet, equipPet, type Wallet } from '../pets/pets'
 import { THEMES } from '../themes'
 import type { ThemeId } from '../themes/types'
 import { BattleScreen } from './BattleScreen'
 import { PlacementScreen } from './PlacementScreen'
-import { WALLET_KEY, loadSettings, loadWallet, readWallet, saveSettings, saveWallet, type Settings } from './storage'
+import {
+  WALLET_KEY,
+  loadBattle,
+  loadSettings,
+  loadWallet,
+  readWallet,
+  saveBattle,
+  saveSettings,
+  saveWallet,
+  type SavedBattle,
+  type Settings,
+} from './storage'
 import { TitleScreen } from './TitleScreen'
 import { TradingPost } from './TradingPost'
 
@@ -14,7 +25,7 @@ type Screen =
   | { name: 'title' }
   | { name: 'shop' }
   | { name: 'placement'; themeId: ThemeId; mode: GameMode; initialShips?: Ship[] }
-  | { name: 'battle'; themeId: ThemeId; mode: GameMode; humanShips: Ship[]; key: number }
+  | { name: 'battle'; themeId: ThemeId; mode: GameMode; humanShips: Ship[]; key: number; resume?: GameState }
 
 export default function App() {
   const [settings, setSettings] = useState<Settings>(loadSettings)
@@ -24,6 +35,9 @@ export default function App() {
   const [wallet, setWallet] = useState<Wallet>(loadWallet)
 
   useEffect(() => saveSettings(settings), [settings])
+
+  const [saved, setSaved] = useState<SavedBattle | null>(loadBattle)
+  useEffect(() => saveBattle(saved), [saved])
 
   // Every wallet change starts from the latest saved copy, and other tabs' changes are picked up,
   // so two open tabs never overwrite each other's gold or pets.
@@ -95,6 +109,14 @@ export default function App() {
       <main className="app-main">
         {screen.name === 'title' && (
           <TitleScreen
+            resume={
+              saved && {
+                label: `${THEMES[saved.themeId].name} · ${saved.mode === 'special' ? 'Special' : 'Classic'}`,
+                detail: `Ships afloat: yours ${afloat(saved.game, 'human')}/5, theirs ${afloat(saved.game, 'ai')}/5`,
+                onResume: () => setScreen({ name: 'battle', ...saved, resume: saved.game }),
+                onDiscard: () => setSaved(null),
+              }
+            }
             gold={wallet.gold}
             onShop={() => setScreen({ name: 'shop' })}
             mode={settings.mode}
@@ -130,6 +152,14 @@ export default function App() {
             theme={theme}
             mode={screen.mode}
             humanShips={screen.humanShips}
+            resume={screen.resume}
+            onProgress={(game) =>
+              setSaved(
+                game.phase === 'over'
+                  ? null
+                  : { themeId: screen.themeId, mode: screen.mode, humanShips: screen.humanShips, key: screen.key, game },
+              )
+            }
             banterOn={settings.banter}
             pet={wallet.equipped}
             gold={wallet.gold}
@@ -149,3 +179,6 @@ export default function App() {
     </div>
   )
 }
+
+const afloat = (game: GameState, player: 'human' | 'ai') =>
+  game.fleets[player].filter((ship) => !isSunk(ship, game.marks[player])).length

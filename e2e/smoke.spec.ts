@@ -164,3 +164,28 @@ test("two open tabs never overwrite each other's gold or pets", async ({ context
   await expect(a.locator('.pet-card', { hasText: 'Dragon' }).getByRole('button', { name: 'Equip' })).toBeVisible()
   await expect(a.locator('.pet-card', { hasText: 'Parrot' }).getByRole('button', { name: /Equipped/ })).toBeVisible()
 })
+
+test('an unfinished game can be resumed after leaving or reloading, or discarded', async ({ page }) => {
+  await page.goto('./')
+  await page.getByRole('button', { name: /Pirate Seas/ }).click()
+  await page.getByRole('button', { name: /Auto-place/ }).click()
+  await page.getByRole('button', { name: 'Start battle' }).click()
+  const a1 = page.getByRole('group', { name: /waters/ }).locator('[data-cell="A1"]')
+  await a1.click()
+  await expect(page.getByText(/Your turn/)).toBeVisible()
+
+  await page.getByRole('button', { name: 'AI Battleship' }).click()
+  const card = page.getByRole('region', { name: 'Game in progress' })
+  await expect(card).toContainText('Pirate Seas · Classic')
+  await page.reload()
+  await card.getByRole('button', { name: 'Resume game' }).click()
+  await expect(a1).toHaveAttribute('aria-label', /A1, (miss|hit)/)
+  await expect(page.getByText(/Your turn/)).toBeVisible()
+
+  await page.getByRole('button', { name: 'AI Battleship' }).click()
+  await card.getByRole('button', { name: 'Start new game' }).click()
+  await expect(card).toHaveCount(0)
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'AI Battleship' })).toBeVisible()
+  await expect(card).toHaveCount(0)
+})

@@ -11,7 +11,7 @@ export const PETS: readonly Pet[] = [
   { id: 'parrot', name: 'Parrot', price: 50, blurb: 'Loud, loyal, and very proud of every hit.' },
   { id: 'dragon', name: 'Dragon', price: 100, blurb: 'A pocket-sized dragon who insists the fire was its idea.' },
   { id: 'sharky', name: 'Sharky', price: 150, blurb: 'Circles the target twice before dropping your shot. For drama.' },
-  { id: 'otter', name: 'Devin the Otter', price: 200, blurb: 'Plans the shot, carries it out, and reports back.' },
+  { id: 'otter', name: 'Captain Dev', price: 200, blurb: 'Plans the shot, carries it out, and reports back.' },
 ]
 
 export const WIN_REWARD = 50
