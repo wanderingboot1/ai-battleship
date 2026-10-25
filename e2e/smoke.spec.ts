@@ -117,3 +117,28 @@ test('special mode: pick mode before placing, then use an ability', async ({ pag
   await expect(card).toContainText('Used')
   await expect(page.getByRole('status').filter({ hasText: /used|spotted|unhit ship/ }).first()).toBeVisible()
 })
+
+test('trading post: buy a co-captain, it persists and rides into battle', async ({ page }) => {
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('seeded')) return
+    localStorage.setItem('ai-battleship:wallet', JSON.stringify({ gold: 120, owned: [], equipped: null, lastRewarded: null }))
+    sessionStorage.setItem('seeded', '1')
+  })
+  await page.goto('./')
+  await page.getByRole('button', { name: /Trading Post/ }).click()
+  await expect(page.locator('.gold-balance')).toContainText('120 gold')
+  await expect(page.locator('.pet-card', { hasText: 'Sharky' }).getByRole('button', { name: /Buy/ })).toBeDisabled()
+  const dragon = page.locator('.pet-card', { hasText: 'Dragon' })
+  await dragon.getByRole('button', { name: /Buy/ }).click()
+  await expect(page.locator('.gold-balance')).toContainText('20 gold')
+  await expect(dragon.getByRole('button', { name: /Equipped/ })).toBeVisible()
+
+  await page.reload()
+  await expect(page.getByRole('button', { name: /Trading Post/ })).toContainText('20 gold')
+  await page.getByRole('button', { name: /Classic Naval/ }).click()
+  await page.getByRole('button', { name: /Auto-place/ }).click()
+  await page.getByRole('button', { name: 'Start battle' }).click()
+  await expect(page.getByRole('img', { name: /Co-captain: Dragon/ })).toBeVisible()
+  await page.getByRole('group', { name: /Enemy waters/ }).locator('[data-cell="A1"]').click()
+  await expect(page.locator('.pet-drop')).toHaveCount(1)
+})

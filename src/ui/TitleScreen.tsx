@@ -4,6 +4,8 @@ import { THEMES, THEME_ORDER } from '../themes'
 import type { ThemeId } from '../themes/types'
 
 interface Props {
+  gold: number
+  onShop: () => void
   mode: GameMode
   onModeChange: (mode: GameMode) => void
   onChoose: (theme: ThemeId) => void
@@ -14,12 +16,15 @@ const MODES: { id: GameMode; name: string; blurb: string }[] = [
   { id: 'special', name: 'Special', blurb: 'Each side gets 3 random single-use abilities.' },
 ]
 
-export function TitleScreen({ mode, onModeChange, onChoose }: Props) {
+export function TitleScreen({ gold, onShop, mode, onModeChange, onChoose }: Props) {
   return (
     <div className="title-screen">
       <header className="title-hero">
         <h1>AI Battleship</h1>
         <p>Sink their fleet before they sink yours.</p>
+        <button type="button" className="btn shop-link" onClick={onShop}>
+          🏪 Trading Post · 🪙 {gold} gold
+        </button>
       </header>
 
       <h2 className="choose-heading">1. Choose a mode</h2>

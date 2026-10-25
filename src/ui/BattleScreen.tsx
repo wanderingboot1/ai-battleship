@@ -24,6 +24,8 @@ import {
 } from '../engine/game'
 import { randomFleet } from '../engine/placement'
 import { createRng, randomSeed } from '../engine/rng'
+import { PetArt } from '../pets/PetArt'
+import { PETS, WIN_REWARD, type PetId } from '../pets/pets'
 import type { Cell, Orientation, PlayerId, Ship } from '../engine/types'
 import { createLinePicker } from '../themes/dialogue'
 import type { DialogueEvent, Mood, Theme } from '../themes/types'
@@ -37,6 +39,9 @@ interface Props {
   mode: GameMode
   humanShips: Ship[]
   banterOn: boolean
+  pet: PetId | null
+  gold: number
+  onWin: () => void
   onRematch: (humanShips: Ship[]) => void
   onChangeTheme: () => void
 }
@@ -72,7 +77,7 @@ function moodFor(game: GameState): Mood {
   return last.result === 'miss' ? 'neutral' : 'smug'
 }
 
-export function BattleScreen({ theme, mode, humanShips, banterOn, onRematch, onChangeTheme }: Props) {
+export function BattleScreen({ theme, mode, humanShips, banterOn, pet, gold, onWin, onRematch, onChangeTheme }: Props) {
   const rng = useRef(createRng(randomSeed()))
   const [game, setGame] = useState<GameState>(() =>
     createMatch(
@@ -126,6 +131,14 @@ export function BattleScreen({ theme, mode, humanShips, banterOn, onRematch, onC
     if (sunk || (!record.ability && rng.current() < 0.4)) say(dialogueEventFor(event), { ship })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game.log.length])
+
+  const rewarded = useRef(false)
+  useEffect(() => {
+    if (game.phase !== 'over' || game.winner !== 'human' || rewarded.current) return
+    rewarded.current = true
+    onWin()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game.phase, game.winner])
 
   // Hide banter after a few seconds so it never lingers over play.
   useEffect(() => {
@@ -263,6 +276,11 @@ export function BattleScreen({ theme, mode, humanShips, banterOn, onRematch, onC
               ? `You sank ${theme.opponent.name}'s entire fleet.`
               : `${theme.opponent.name} sank your fleet.`}
           </p>
+          {game.winner === 'human' && (
+            <p className="gold-earned">
+              🪙 +{WIN_REWARD} gold · {gold} total. Spend it at the Trading Post.
+            </p>
+          )}
           <dl className="stats">
             <div>
               <dt>Your shots</dt>
@@ -323,8 +341,19 @@ export function BattleScreen({ theme, mode, humanShips, banterOn, onRematch, onC
 
       <div className="boards">
         <div className="board-wrap">
-          <h3 className="board-title">{theme.terms.enemyBoard}</h3>
+          <div className="board-heading">
+            <h3 className="board-title">{theme.terms.enemyBoard}</h3>
+            {pet && (
+              <span
+                className={`pet-perch ${lastBy('human').length ? '' : 'pet-idle'}`}
+                title={`Co-captain: ${PETS.find((p) => p.id === pet)?.name}`}
+              >
+                <PetArt id={pet} title={`Co-captain: ${PETS.find((p) => p.id === pet)?.name}`} />
+              </span>
+            )}
+          </div>
           <Board
+            dropper={pet ? <PetArt id={pet} /> : undefined}
             themeId={theme.id}
             label={theme.terms.enemyBoard}
             marks={game.marks.ai}
