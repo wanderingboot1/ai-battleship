@@ -1,0 +1,79 @@
+import type { Theme } from './types'
+
+export const pirate: Theme = {
+  id: 'pirate',
+  name: 'Pirate Seas',
+  tagline: 'Wooden hulls, cannon smoke and a captain who cheats at cards.',
+  opponent: { name: 'Captain Calico Vane', title: 'Terror of the Windward Isles', shortName: 'Calico' },
+  shipNames: {
+    carrier: 'Galleon',
+    battleship: 'Frigate',
+    cruiser: 'Brigantine',
+    submarine: 'Sloop',
+    patrol: 'Cutter',
+  },
+  terms: { enemyBoard: "Calico's waters", ownBoard: 'Your fleet' },
+  dialogue: {
+    intro: [
+      'Captain Calico Vane, at your service. Well, at your expense.',
+      "Ahoy! Shall we make this interesting? I'll make it interesting.",
+      "Pretty fleet you've got. Be a shame if it sank.",
+      "Fair warning: I cheat at cards. Lucky for you, this isn't cards.",
+      "Run out the guns, friend. Let's dance.",
+    ],
+    playerMiss: [
+      'Ooh, so close. No, wait. Not close at all.',
+      "You've hit... the ocean! Congratulations.",
+      "Splash! Do it again, it's adorable.",
+      "Missed! I'm putting that in a shanty.",
+      'Lovely shot. For a seagull.',
+    ],
+    playerHit: [
+      'Oi! That was my good side!',
+      'Ow. Fine. You get one.',
+      'Blast it! Someone fetch the carpenter.',
+      'Lucky. Very, very lucky.',
+      "Right. Now I'm cross.",
+    ],
+    aiShipSunk: [
+      "My {ship}! I'd only just stolen it!",
+      'There goes the {ship}. My best hat was aboard.',
+      "The {ship}?! You'll pay for that. In doubloons, ideally.",
+      'Down goes the {ship}. Sentimental value, mostly.',
+      "Fine, take the {ship}. I've got others. Somewhere.",
+    ],
+    aiHit: [
+      'Ha! Got you!',
+      'Bullseye! Or whatever the nautical word is.',
+      "Boom! Was that yours? It's mine now.",
+      "Hear that? That's the sound of me winning.",
+      'Lovely. Do keep your ships right there.',
+    ],
+    aiMiss: [
+      'Bah. The parrot jogged my elbow.',
+      'Just warming up the cannons.',
+      'Missed on purpose. Builds suspense.',
+      'Where are you hiding, little boat?',
+      'Not a word, crew. Not one word.',
+    ],
+    playerShipSunk: [
+      'Your {ship} is going down! Wave goodbye!',
+      "Down to Davy Jones with your {ship}!",
+      "I'll be salvaging that {ship} later. Thanks!",
+      'Sunk! That {ship} looked expensive, too.',
+      'Your {ship} sends its regards from the seabed.',
+    ],
+    aiWins: [
+      'And the sea is mine! Better luck next tide.',
+      'Victory! Drinks are on you.',
+      "That's the game. I'll take your ships and your dignity.",
+      'Never bet against Calico Vane. Write that down.',
+    ],
+    aiLoses: [
+      'Well, shiver me... no, I refuse to say it. Well played.',
+      'Beaten! By you! I need to sit down.',
+      "Fine! Keep the sea. I'll steal it back later.",
+      "You've earned my respect. Don't spend it all at once.",
+    ],
+  },
+}

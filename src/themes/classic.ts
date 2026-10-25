@@ -1,0 +1,79 @@
+import type { Theme } from './types'
+
+export const classic: Theme = {
+  id: 'classic',
+  name: 'Classic Naval',
+  tagline: 'Grey steel, a plotting table and a very calm admiral.',
+  opponent: { name: 'Admiral Edmund Hale', title: 'Commander, Home Fleet', shortName: 'Hale' },
+  shipNames: {
+    carrier: 'Carrier',
+    battleship: 'Battleship',
+    cruiser: 'Cruiser',
+    submarine: 'Submarine',
+    patrol: 'Patrol Boat',
+  },
+  terms: { enemyBoard: 'Enemy waters', ownBoard: 'Your fleet' },
+  dialogue: {
+    intro: [
+      'Admiral Hale. Do try to make this interesting.',
+      'Fleet in position. Fire when ready. Or whenever, really.',
+      "Let's keep this civilised, shall we?",
+      'I have read your file. It was short.',
+      "Standard rules of engagement. I'll try not to embarrass you.",
+    ],
+    playerMiss: [
+      'Water. Plenty of it out there.',
+      'A bold strike against the sea itself.',
+      'Noted.',
+      'The fish send their regards.',
+      'Close. In the sense that it was on the map.',
+    ],
+    playerHit: [
+      'Hm. Lucky.',
+      'A scratch. We have paint.',
+      'That will need a strongly worded report.',
+      "Fine shooting. Don't let it go to your head.",
+      'Damage control, if you would be so kind.',
+    ],
+    aiShipSunk: [
+      'The {ship}. I was fond of that one.',
+      "Well. That's the {ship} gone. Carry on.",
+      "Lost the {ship}. I'll write to the Admiralty. Eventually.",
+      'The {ship}. Regrettable, but hardly decisive.',
+      'You sank the {ship}. Congratulations are in order. Briefly.',
+    ],
+    aiHit: [
+      'Ah. Contact.',
+      'Direct hit. As planned.',
+      'I do believe that was one of yours.',
+      'Textbook.',
+      "Steady on. That's only the beginning.",
+    ],
+    aiMiss: [
+      'Recalibrating.',
+      "Merely establishing where you aren't.",
+      'A ranging shot. Obviously.',
+      'The sea is larger than the charts suggest.',
+      'Intentional. Mostly.',
+    ],
+    playerShipSunk: [
+      'Your {ship}, I believe. Condolences.',
+      "And that's the {ship}. Do keep up.",
+      'Scratch one {ship}.',
+      'The {ship} has retired from service. Abruptly.',
+      "I'd mark that {ship} as unavailable.",
+    ],
+    aiWins: [
+      'And that, as they say, is that. Good game.',
+      'A tidy engagement. Same time next week?',
+      "Victory. I'll have the tea brought round.",
+      'Well fought. Not well enough, but well fought.',
+    ],
+    aiLoses: [
+      "Well. That wasn't in the plan. Well played.",
+      'Defeated. I shall need a moment. And possibly a new career.',
+      "Congratulations. Truly. Please don't tell anyone.",
+      "A fine victory. I'll be reviewing the charts. All night.",
+    ],
+  },
+}
