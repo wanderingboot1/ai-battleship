@@ -28,15 +28,18 @@ export function saveSettings(settings: Settings) {
   }
 }
 
-const WALLET_KEY = 'ai-battleship:wallet'
+export const WALLET_KEY = 'ai-battleship:wallet'
 
-export function loadWallet(): Wallet {
+/** The saved wallet, or null if storage is unavailable. */
+export function readWallet(): Wallet | null {
   try {
     return parseWallet(JSON.parse(localStorage.getItem(WALLET_KEY) ?? 'null'))
   } catch {
-    return parseWallet(null)
+    return null
   }
 }
+
+export const loadWallet = (): Wallet => readWallet() ?? parseWallet(null)
 
 export function saveWallet(wallet: Wallet) {
   try {

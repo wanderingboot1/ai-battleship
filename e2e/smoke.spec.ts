@@ -142,3 +142,25 @@ test('trading post: buy a co-captain, it persists and rides into battle', async 
   await page.getByRole('group', { name: /Enemy waters/ }).locator('[data-cell="A1"]').click()
   await expect(page.locator('.pet-drop')).toHaveCount(1)
 })
+
+test("two open tabs never overwrite each other's gold or pets", async ({ context }) => {
+  const a = await context.newPage()
+  await a.goto('./')
+  await a.evaluate(() =>
+    localStorage.setItem('ai-battleship:wallet', JSON.stringify({ gold: 150, owned: [], equipped: null, lastRewarded: null })),
+  )
+  await a.reload()
+  const b = await context.newPage()
+  await b.goto('./')
+  for (const p of [a, b]) await p.getByRole('button', { name: /Trading Post/ }).click()
+
+  await a.locator('.pet-card', { hasText: 'Dragon' }).getByRole('button', { name: /Buy/ }).click()
+  await expect(b.locator('.gold-balance')).toHaveText(/🪙 50 gold/)
+  await b.locator('.pet-card', { hasText: 'Parrot' }).getByRole('button', { name: /Buy/ }).click()
+  await expect(b.locator('.gold-balance')).toHaveText(/🪙 0 gold/)
+
+  await a.reload()
+  await a.getByRole('button', { name: /Trading Post/ }).click()
+  await expect(a.locator('.pet-card', { hasText: 'Dragon' }).getByRole('button', { name: 'Equip' })).toBeVisible()
+  await expect(a.locator('.pet-card', { hasText: 'Parrot' }).getByRole('button', { name: /Equipped/ })).toBeVisible()
+})

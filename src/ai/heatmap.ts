@@ -6,6 +6,8 @@ export type SearchMode = 'hunt' | 'target'
 
 export interface Heatmap {
   mode: SearchMode
+  /** Plausible open cells inside recon scans that still hold ship squares; hunt mode shoots these first. */
+  focus: Cell[]
   /** Score per cell; 0 for cells already targeted or impossible. */
   scores: number[]
 }
@@ -62,8 +64,14 @@ export function computeHeatmap(view: AIView, targetWeight = DEFAULT_TARGET_WEIGH
       }
     }
   }
+  const focus = new Set<Cell>()
   if (mode === 'hunt') {
-    for (const lead of reconLeads) for (const c of lead.cells) scores[c] *= 1 + lead.remaining
+    for (const lead of reconLeads) {
+      for (const c of lead.cells) {
+        scores[c] *= 1 + lead.remaining
+        if (scores[c] > 0) focus.add(c)
+      }
+    }
   }
-  return { mode, scores }
+  return { mode, scores, focus: [...focus] }
 }

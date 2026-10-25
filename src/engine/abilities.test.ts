@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { decideTurn } from '../ai/opponent'
-import { ABILITY_POOL, drawHand } from './abilities'
+import { decideAction, decideTurn } from '../ai/opponent'
+import { ABILITY_POOL, drawHand, reconArea } from './abilities'
 import { getAIView } from './aiView'
 import { applyAction, createMatch, type AbilityUse, type GameState } from './game'
 import { randomFleet } from './placement'
@@ -113,6 +113,22 @@ describe('abilities', () => {
     expect(r.events).toHaveLength(1)
     expect(r.state.phase).toBe('over')
     expect(r.state.winner).toBe('human')
+  })
+
+  it('AI hunts inside a recon area that still holds ship squares', () => {
+    const area = reconArea(11)
+    for (let seed = 1; seed <= 30; seed++) {
+      const shot = decideAction(
+        {
+          marks: Array(100).fill('none'),
+          sunkShips: [],
+          remainingShipLengths: [5, 4, 3, 3, 2],
+          intel: [{ kind: 'recon', center: 11, cells: area, count: 2, hitsAtScan: 0 }],
+        },
+        createRng(seed),
+      )
+      expect(area).toContain(shot.cell)
+    }
   })
 
   it('AI plays full Special-mode games using only legal actions, and uses its abilities', () => {

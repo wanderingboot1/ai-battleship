@@ -6,7 +6,7 @@ import { THEMES } from '../themes'
 import type { ThemeId } from '../themes/types'
 import { BattleScreen } from './BattleScreen'
 import { PlacementScreen } from './PlacementScreen'
-import { loadSettings, loadWallet, saveSettings, saveWallet, type Settings } from './storage'
+import { WALLET_KEY, loadSettings, loadWallet, readWallet, saveSettings, saveWallet, type Settings } from './storage'
 import { TitleScreen } from './TitleScreen'
 import { TradingPost } from './TradingPost'
 
@@ -24,7 +24,21 @@ export default function App() {
   const [wallet, setWallet] = useState<Wallet>(loadWallet)
 
   useEffect(() => saveSettings(settings), [settings])
-  useEffect(() => saveWallet(wallet), [wallet])
+
+  // Every wallet change starts from the latest saved copy, and other tabs' changes are picked up,
+  // so two open tabs never overwrite each other's gold or pets.
+  const updateWallet = (change: (w: Wallet) => Wallet) => {
+    const next = change(readWallet() ?? wallet)
+    saveWallet(next)
+    setWallet(next)
+  }
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === null || e.key === WALLET_KEY) setWallet(loadWallet())
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
 
   const setScreen = (next: Screen) => {
     setConfirmLeave(false)
@@ -92,8 +106,8 @@ export default function App() {
         {screen.name === 'shop' && (
           <TradingPost
             wallet={wallet}
-            onBuy={(id) => setWallet((w) => buyPet(w, id) ?? w)}
-            onEquip={(id) => setWallet((w) => equipPet(w, id))}
+            onBuy={(id) => updateWallet((w) => buyPet(w, id) ?? w)}
+            onEquip={(id) => updateWallet((w) => equipPet(w, id))}
             onBack={() => setScreen({ name: 'title' })}
           />
         )}
@@ -117,7 +131,7 @@ export default function App() {
             banterOn={settings.banter}
             pet={wallet.equipped}
             gold={wallet.gold}
-            onWin={() => setWallet((w) => awardWin(w, screen.key))}
+            onWin={() => updateWallet((w) => awardWin(w, screen.key))}
             onRematch={(ships) =>
               setScreen({ name: 'placement', themeId: screen.themeId, mode: screen.mode, initialShips: ships })
             }
