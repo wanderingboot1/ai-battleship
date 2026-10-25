@@ -38,6 +38,9 @@ interface Props {
   theme: Theme
   mode: GameMode
   humanShips: Ship[]
+  /** An unfinished game to continue instead of starting a new one. */
+  resume?: GameState
+  onProgress: (game: GameState) => void
   banterOn: boolean
   pet: PetId | null
   gold: number
@@ -77,15 +80,31 @@ function moodFor(game: GameState): Mood {
   return last.result === 'miss' ? 'neutral' : 'smug'
 }
 
-export function BattleScreen({ theme, mode, humanShips, banterOn, pet, gold, onWin, onRematch, onChangeTheme }: Props) {
+export function BattleScreen({
+  theme,
+  mode,
+  humanShips,
+  resume,
+  onProgress,
+  banterOn,
+  pet,
+  gold,
+  onWin,
+  onRematch,
+  onChangeTheme,
+}: Props) {
   const rng = useRef(createRng(randomSeed()))
-  const [game, setGame] = useState<GameState>(() =>
-    createMatch(
+  const [game, setGame] = useState<GameState>(() => {
+    if (resume) {
+      matchCounter = Math.max(matchCounter, resume.matchId)
+      return resume
+    }
+    return createMatch(
       ++matchCounter,
       { human: humanShips, ai: randomFleet(rng.current) },
       { mode, hands: { human: drawHand(rng.current), ai: drawHand(rng.current) } },
-    ),
-  )
+    )
+  })
   const [targeting, setTargeting] = useState<Targeting | null>(null)
   const [hover, setHover] = useState<Cell | null>(null)
   const gameRef = useRef(game)
@@ -93,7 +112,7 @@ export function BattleScreen({ theme, mode, humanShips, banterOn, pet, gold, onW
 
   const pickLine = useMemo(() => createLinePicker(theme, rng.current), [theme])
   const [line, setLine] = useState<{ text: string; key: number; priority: number; at: number } | null>(null)
-  const processed = useRef(-1)
+  const processed = useRef(resume ? resume.log.length : -1)
 
   const say = (event: DialogueEvent, vars: { ship?: string; ability?: string } = {}) => {
     const priority = ['intro', 'aiShipSunk', 'playerShipSunk', 'aiWins', 'aiLoses', 'aiAbility', 'playerAbility'].includes(
@@ -131,6 +150,11 @@ export function BattleScreen({ theme, mode, humanShips, banterOn, pet, gold, onW
     if (sunk || (!record.ability && rng.current() < 0.4)) say(dialogueEventFor(event), { ship })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game.log.length])
+
+  useEffect(() => {
+    onProgress(game)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game])
 
   const rewarded = useRef(false)
   useEffect(() => {
