@@ -16,6 +16,9 @@
     "ai:stats": "vitest run src/ai/opponent.test.ts --silent=false"
   },
   "dependencies": {
+    "@fontsource/black-ops-one": "^5.3.0",
+    "@fontsource/cinzel": "^5.3.0",
+    "@fontsource/pirata-one": "^5.3.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
