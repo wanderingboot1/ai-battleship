@@ -219,6 +219,7 @@ button.cell[aria-disabled='true'] { cursor: default; }
 .resume-card p { margin: 0; color: var(--ink-dim); font-size: 0.92rem; }
 .resume-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .shop { text-align: center; }
+.coin { width: 1.1em; height: 1.1em; vertical-align: -0.2em; flex: none; }
 .gold-balance { font-size: 1.4rem; font-weight: 800; color: var(--accent) !important; }
 .pet-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin: 1rem 0 1.5rem; }
 .pet-card { background: var(--panel); border: 2px solid rgba(255, 255, 255, 0.12); border-radius: 14px; padding: 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }

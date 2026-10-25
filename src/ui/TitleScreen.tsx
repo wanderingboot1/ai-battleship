@@ -1,4 +1,5 @@
 import type { GameMode } from '../engine/game'
+import { GoldCoin } from './GoldCoin'
 import { Avatar } from '../themes/Avatar'
 import { THEMES, THEME_ORDER } from '../themes'
 import type { ThemeId } from '../themes/types'
@@ -24,7 +25,7 @@ export function TitleScreen({ resume, gold, onShop, mode, onModeChange, onChoose
         <h1>AI Battleship</h1>
         <p>Sink their fleet before they sink yours.</p>
         <button type="button" className="btn shop-link" onClick={onShop}>
-          🏪 Trading Post · 🪙 {gold} gold
+          🏪 Trading Post · <GoldCoin /> {gold} gold
         </button>
       </header>
 

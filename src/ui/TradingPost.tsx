@@ -1,3 +1,4 @@
+import { GoldCoin } from './GoldCoin'
 import { PetArt } from '../pets/PetArt'
 import { PETS, WIN_REWARD, type PetId, type Wallet } from '../pets/pets'
 
@@ -14,11 +15,10 @@ export function TradingPost({ wallet, onBuy, onEquip, onBack }: Props) {
       <header className="title-hero">
         <h1>Trading Post</h1>
         <p className="gold-balance" aria-live="polite">
-          🪙 {wallet.gold} gold
+          <GoldCoin /> {wallet.gold} gold
         </p>
         <p>
-          Win a match to earn {WIN_REWARD} gold. Co-captains ride along and drop your shots for you. They are just
-          for fun and never change the odds.
+          Win a match to earn {WIN_REWARD} gold. Co-captains ride along and drop your shots for you. Win them all.
         </p>
       </header>
 
@@ -45,7 +45,7 @@ export function TradingPost({ wallet, onBuy, onEquip, onBack }: Props) {
               ) : (
                 <>
                   <button type="button" className="btn btn-primary" disabled={short > 0} onClick={() => onBuy(pet.id)}>
-                    Buy · 🪙 {pet.price}
+                    Buy · <GoldCoin /> {pet.price}
                   </button>
                   {short > 0 && <span className="pet-need">{short} more gold needed</span>}
                 </>
