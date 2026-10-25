@@ -3,7 +3,6 @@
 Battleship in the browser against a themed AI opponent. Built by Blake with Devin.
 
 **Play:** https://wanderingboot1.github.io/ai-battleship/
-**Debugging notes:** [DEBUGGING.md](DEBUGGING.md)
 
 No login, install or API key needed. It works on desktop and mobile.
 
