@@ -1,8 +1,11 @@
-import type { AIView } from '../engine/aiView'
-import type { Cell, Rng } from '../engine/types'
+import { BROADSIDE_SHOTS, depthChargeArea, reconArea, torpedoLane } from '../engine/abilities'
+import type { AbilityUse, AIView } from '../engine/aiView'
+import { toCell } from '../engine/board'
+import type { Cell, Orientation, Rng } from '../engine/types'
 import { computeHeatmap } from './heatmap'
 
 export type AIDecision = { type: 'fire'; cell: Cell }
+export type AITurn = AIDecision | { type: 'ability'; use: AbilityUse }
 
 export interface AISettings {
   /**
@@ -45,4 +48,61 @@ export function decideAction(view: AIView, rng: Rng, settings: AISettings = DEFA
     if (roll <= 0) return { type: 'fire', cell: candidates[i].cell }
   }
   return { type: 'fire', cell: candidates[candidates.length - 1].cell }
+}
+
+/** Like decideAction, but may spend an ability first (Special mode). */
+export function decideTurn(view: AIView, rng: Rng, settings: AISettings = DEFAULT_AI_SETTINGS): AITurn {
+  const use = chooseAbility(view, rng, settings)
+  return use ? { type: 'ability', use } : decideAction(view, rng, settings)
+}
+
+/**
+ * Ability policy, using the same heat map as normal shots:
+ * - Broadside is saved for finishing damaged ships (target mode), or the late game.
+ * - Flare and Recon are free scouting, used once the easy early shots are gone.
+ * - Depth Charge and Torpedo are spent occasionally in hunt mode on the area or lane
+ *   with the highest combined score, so they cover the likeliest squares.
+ */
+export function chooseAbility(view: AIView, rng: Rng, settings: AISettings = DEFAULT_AI_SETTINGS): AbilityUse | null {
+  const owned = new Set(view.abilities ?? [])
+  if (owned.size === 0 || view.scoutedThisTurn) return null
+  const { mode, scores } = computeHeatmap(view, settings.targetWeight)
+  const shotsTaken = view.marks.filter((m) => m !== 'none').length
+  const ranked = scores.flatMap((s, c) => (s > 0 ? [c] : [])).sort((a, b) => scores[b] - scores[a])
+  const sum = (cells: Cell[]) => cells.reduce((t, c) => t + (view.marks[c] === 'none' ? scores[c] : 0), 0)
+  const bestBy = (value: (c: Cell) => number) =>
+    ranked.length ? Array.from({ length: 100 }, (_, c) => c).reduce((b, c) => (value(c) > value(b) ? c : b), 0) : null
+
+  if (mode === 'target') {
+    return owned.has('broadside') && ranked.length >= BROADSIDE_SHOTS
+      ? { id: 'broadside', cells: ranked.slice(0, BROADSIDE_SHOTS) }
+      : null
+  }
+  if (owned.has('flare') && shotsTaken >= 12) return { id: 'flare', roll: rng() }
+  if (owned.has('recon') && shotsTaken >= 4) {
+    const cell = bestBy((c) => sum(reconArea(c)))
+    if (cell !== null) return { id: 'recon', cell }
+  }
+  if (owned.has('broadside') && shotsTaken >= 30 && ranked.length >= BROADSIDE_SHOTS) {
+    return { id: 'broadside', cells: ranked.slice(0, BROADSIDE_SHOTS) }
+  }
+  if (shotsTaken < 6 || rng() > 0.35) return null
+
+  const options: { use: AbilityUse; value: number }[] = []
+  if (owned.has('depthCharge')) {
+    const cell = bestBy((c) => sum(depthChargeArea(c)))
+    if (cell !== null) options.push({ use: { id: 'depthCharge', cell }, value: sum(depthChargeArea(cell)) })
+  }
+  if (owned.has('torpedo')) {
+    const lanes = Array.from({ length: 10 }, (_, i) =>
+      (['horizontal', 'vertical'] as Orientation[]).map((orientation) => {
+        const cell = orientation === 'horizontal' ? toCell(i, 0) : toCell(0, i)
+        // A torpedo stops at its first hit, so it is worth roughly half its lane.
+        return { use: { id: 'torpedo', cell, orientation } as AbilityUse, value: sum(torpedoLane(cell, orientation)) * 0.5 }
+      }),
+    ).flat()
+    options.push(lanes.reduce((b, l) => (l.value > b.value ? l : b)))
+  }
+  const best = options.filter((o) => o.value > 0).sort((a, b) => b.value - a.value)[0]
+  return best ? best.use : null
 }

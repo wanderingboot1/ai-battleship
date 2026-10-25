@@ -5,6 +5,13 @@ export const pirate: Theme = {
   name: 'Pirate Seas',
   tagline: 'Wooden hulls, cannon smoke and a captain who cheats at cards.',
   opponent: { name: 'Captain Calico Vane', title: 'Terror of the Windward Isles', shortName: 'Calico' },
+  abilityNames: {
+    recon: 'Spyglass',
+    flare: 'Parrot Scout',
+    broadside: 'Broadside',
+    depthCharge: 'Powder Keg',
+    torpedo: 'Fire Ship',
+  },
   shipNames: {
     carrier: 'Galleon',
     battleship: 'Frigate',
@@ -14,6 +21,20 @@ export const pirate: Theme = {
   },
   terms: { enemyBoard: "Calico's waters", ownBoard: 'Your fleet' },
   dialogue: {
+    aiAbility: [
+      'Time for me {ability}!',
+      'Ever seen a {ability} up close? Ye will now.',
+      'Fetch the {ability}, lads!',
+      "A {ability}! I've been savin' it for someone special.",
+      'Heh. {ability}. Try not to cry.',
+    ],
+    playerAbility: [
+      "A {ability}? Now ye're playin' dirty. I like it.",
+      "Oi! That {ability} was mine to use!",
+      "Fancy {ability}. Did ye steal it?",
+      "A {ability}! Bold move, matey.",
+      "Hmph. Me own {ability}'s bigger.",
+    ],
     intro: [
       'Captain Calico Vane, at your service. Well, at your expense.',
       "Ahoy! Shall we make this interesting? I'll make it interesting.",

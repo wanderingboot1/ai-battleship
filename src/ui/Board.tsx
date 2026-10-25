@@ -17,7 +17,12 @@ interface BoardProps {
   ships?: readonly BoardShip[]
   /** Cells covered by a sunk ship get a distinct marker. */
   sunkCells?: ReadonlySet<Cell>
-  lastShot?: Cell | null
+  /** Cells hit by the most recent action on this board (several for area abilities). */
+  lastShots?: readonly Cell[]
+  /** Highlighted regions, e.g. Recon scans, with a short badge. */
+  areas?: readonly { key: string; cells: readonly Cell[]; label: string }[]
+  /** Squares revealed as ship squares by a Flare. */
+  spotted?: readonly Cell[]
   preview?: { cells: Cell[]; valid: boolean } | null
   isCellEnabled?: (cell: Cell) => boolean
   onCellClick?: (cell: Cell) => void
@@ -36,14 +41,26 @@ function gridArea(cells: readonly Cell[]) {
   }
 }
 
+function boundsArea(cells: readonly Cell[]) {
+  const rows = cells.map(rowOf)
+  const cols = cells.map(colOf)
+  return {
+    gridRow: `${Math.min(...rows) + 2} / ${Math.max(...rows) + 3}`,
+    gridColumn: `${Math.min(...cols) + 2} / ${Math.max(...cols) + 3}`,
+  }
+}
+
 const cellPos = (cell: Cell) => ({ gridRow: rowOf(cell) + 2, gridColumn: colOf(cell) + 2 })
 
 export function Board(props: BoardProps) {
-  const { themeId, label, marks, ships = [], sunkCells, lastShot, preview, onCellClick, onCellHover } = props
+  const { themeId, label, marks, ships = [], sunkCells, lastShots = [], preview, onCellClick, onCellHover } = props
   const interactive = !!onCellClick
   const cells = Array.from({ length: CELL_COUNT }, (_, c) => c)
-  const lastMark = lastShot != null ? marks?.[lastShot] : undefined
-  const sinking = lastShot != null ? ships.find(({ ship, sunk }) => sunk && ship.cells.includes(lastShot))?.ship : undefined
+  const sinkingShips = new Set(
+    ships.filter(({ ship, sunk }) => sunk && ship.cells.some((c) => lastShots.includes(c))).map(({ ship }) => ship),
+  )
+  const sinkingCells = new Set([...sinkingShips].flatMap((s) => s.cells))
+  const shotKey = lastShots.join('-')
 
   return (
     <div className={`board ${interactive ? 'board-interactive' : ''} ${props.className ?? ''}`}>
@@ -88,7 +105,7 @@ export function Board(props: BoardProps) {
         {ships.map(({ ship, sunk }) => (
           <div
             key={ship.type}
-            className={`ship ${sunk ? 'ship-sunk' : ''} ${ship === sinking ? 'ship-sinking' : ''}`}
+            className={`ship ${sunk ? 'ship-sunk' : ''} ${sinkingShips.has(ship) ? 'ship-sinking' : ''}`}
             style={gridArea(ship.cells)}
             aria-hidden="true"
           >
@@ -109,7 +126,7 @@ export function Board(props: BoardProps) {
           mark === 'none' ? null : (
             <div
               key={`m${cell}`}
-              className={`mark mark-${mark} ${sunkCells?.has(cell) ? 'mark-sunk' : ''} ${lastShot === cell ? 'mark-last' : ''}`}
+              className={`mark mark-${mark} ${sunkCells?.has(cell) ? 'mark-sunk' : ''} ${lastShots.includes(cell) ? 'mark-last' : ''}`}
               style={cellPos(cell)}
               aria-hidden="true"
             >
@@ -126,24 +143,42 @@ export function Board(props: BoardProps) {
           ),
         )}
 
-        {lastShot != null && lastMark === 'miss' && (
-          <div key={`splash${lastShot}`} className="fx fx-splash" style={cellPos(lastShot)} aria-hidden="true" />
+        {lastShots.map((cell) =>
+          marks?.[cell] === 'miss' ? (
+            <div key={`splash${cell}`} className="fx fx-splash" style={cellPos(cell)} aria-hidden="true" />
+          ) : marks?.[cell] === 'hit' && !sinkingCells.has(cell) ? (
+            <div key={`blast${cell}`} className="fx fx-blast" style={cellPos(cell)} aria-hidden="true">
+              <BlastArt />
+            </div>
+          ) : null,
         )}
-        {lastShot != null && lastMark === 'hit' && !sinking && (
-          <div key={`blast${lastShot}`} className="fx fx-blast" style={cellPos(lastShot)} aria-hidden="true">
-            <BlastArt />
-          </div>
+        {[...sinkingShips].flatMap((ship) =>
+          ship.cells.map((cell, i) => (
+            <div
+              key={`sink${shotKey}-${cell}`}
+              className="fx fx-blast fx-blast-big"
+              style={{ ...cellPos(cell), animationDelay: `${i * 0.13}s` }}
+              aria-hidden="true"
+            >
+              <BlastArt />
+            </div>
+          )),
         )}
-        {sinking?.cells.map((cell, i) => (
-          <div
-            key={`sink${lastShot}-${cell}`}
-            className="fx fx-blast fx-blast-big"
-            style={{ ...cellPos(cell), animationDelay: `${i * 0.13}s` }}
-            aria-hidden="true"
-          >
-            <BlastArt />
+
+        {props.areas?.map((area) => (
+          <div key={area.key} className="area" style={boundsArea(area.cells)} aria-hidden="true">
+            <span className="area-badge">{area.label}</span>
           </div>
         ))}
+        {props.spotted?.map((cell) =>
+          marks?.[cell] === 'none' ? (
+            <div key={`spot${cell}`} className="spotted" style={cellPos(cell)} aria-hidden="true">
+              <svg viewBox="-10 -10 20 20">
+                <path d="M0 -8 L2 -2 L8 0 L2 2 L0 8 L-2 2 L-8 0 L-2 -2 Z" />
+              </svg>
+            </div>
+          ) : null,
+        )}
       </div>
       {props.children}
     </div>

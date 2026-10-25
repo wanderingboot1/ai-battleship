@@ -11,7 +11,7 @@ import { decideAction } from './opponent'
 /** Plays the AI alone against a fleet until it sinks everything; returns the shots it needed. */
 function simulate(seed: number): number {
   const rng = createRng(seed)
-  let state: GameState = createMatch(1, { human: randomFleet(rng), ai: randomFleet(rng) }, 'ai')
+  let state: GameState = createMatch(1, { human: randomFleet(rng), ai: randomFleet(rng) }, { firstPlayer: 'ai' })
   const seen = new Set<number>()
   while (state.phase === 'battle') {
     const { cell } = decideAction(getAIView(state), rng)
@@ -100,7 +100,7 @@ describe('AI fairness', () => {
       { type: 'submarine', cells: [75, 76, 77] },
     ]
     const play = (human: Ship[]) => {
-      let s = createMatch(1, { human, ai: aiFleet }, 'ai')
+      let s = createMatch(1, { human, ai: aiFleet }, { firstPlayer: 'ai' })
       for (const cell of [0, 1, 99]) {
         const r = applyAction(s, { type: 'fire', matchId: 1, by: 'ai', cell })
         if (!r.ok) throw new Error(r.reason)

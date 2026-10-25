@@ -5,6 +5,13 @@ export const roman: Theme = {
   name: 'Roman Navy',
   tagline: 'Bronze rams, oar banks and an extremely important commander.',
   opponent: { name: 'Navarch Gaius Magnus', title: 'Admiral of the Mare Nostrum', shortName: 'Gaius' },
+  abilityNames: {
+    recon: 'Scout Skiff',
+    flare: "Oracle's Omen",
+    broadside: 'Ballista Volley',
+    depthCharge: 'Fire Pots',
+    torpedo: 'Ramming Run',
+  },
   shipNames: {
     carrier: 'Quinquereme',
     battleship: 'Quadrireme',
@@ -14,6 +21,20 @@ export const roman: Theme = {
   },
   terms: { enemyBoard: 'Hostile waters', ownBoard: 'Your fleet' },
   dialogue: {
+    aiAbility: [
+      'Behold: the {ability}! Scribes, record this.',
+      'Rome unleashes the {ability}!',
+      'The gods demand a {ability}. Who am I to refuse?',
+      'A {ability}, as foretold in my memoirs.',
+      'Sound the horns! {ability}!',
+    ],
+    playerAbility: [
+      'A {ability}? Barbaric. Effective, but barbaric.',
+      'You dare wield a {ability} against Rome?',
+      'Your {ability} will be mentioned. Briefly. In a footnote.',
+      'The Senate will hear of this {ability}.',
+      'A {ability}! At last, an opponent worthy of a mosaic.',
+    ],
     intro: [
       'I am Gaius Magnus. Rome thanks you in advance for your surrender.',
       'Behold, the pride of the Mare Nostrum! Try not to weep.',

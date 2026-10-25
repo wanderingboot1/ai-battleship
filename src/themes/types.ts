@@ -1,3 +1,4 @@
+import type { AbilityId } from '../engine/abilities'
 import type { ShipType } from '../engine/types'
 
 export type ThemeId = 'classic' | 'roman' | 'pirate'
@@ -15,6 +16,8 @@ export type DialogueEvent =
   | 'playerShipSunk'
   | 'aiWins'
   | 'aiLoses'
+  | 'aiAbility'
+  | 'playerAbility'
 
 export interface Theme {
   id: ThemeId
@@ -27,10 +30,12 @@ export interface Theme {
     shortName: string
   }
   shipNames: Record<ShipType, string>
+  /** Theme names for the shared Special-mode abilities. */
+  abilityNames: Record<AbilityId, string>
   terms: {
     enemyBoard: string
     ownBoard: string
   }
-  /** Lines may include {ship}, replaced with the theme's ship name. */
+  /** Lines may include {ship} or {ability}, replaced with the theme's names. */
   dialogue: Record<DialogueEvent, string[]>
 }

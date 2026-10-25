@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { ABILITY_POOL } from '../engine/abilities'
 import { createRng } from '../engine/rng'
 import { FLEET } from '../engine/types'
 import { createLinePicker } from './dialogue'
@@ -10,6 +11,7 @@ describe('themes', () => {
     for (const id of THEME_ORDER) {
       const theme = THEMES[id]
       for (const spec of FLEET) expect(theme.shipNames[spec.type]).toBeTruthy()
+      for (const id of ABILITY_POOL) expect(theme.abilityNames[id]).toBeTruthy()
       for (const lines of Object.values(theme.dialogue)) expect(lines.length).toBeGreaterThanOrEqual(4)
     }
   })
