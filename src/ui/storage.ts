@@ -41,10 +41,12 @@ export function readWallet(): Wallet | null {
 
 export const loadWallet = (): Wallet => readWallet() ?? parseWallet(null)
 
-export function saveWallet(wallet: Wallet) {
+/** Returns false if the wallet could not be saved. */
+export function saveWallet(wallet: Wallet): boolean {
   try {
     localStorage.setItem(WALLET_KEY, JSON.stringify(wallet))
+    return true
   } catch {
-    // See saveSettings.
+    return false
   }
 }

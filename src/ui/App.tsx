@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { GameMode } from '../engine/game'
 import type { Ship } from '../engine/types'
 import { awardWin, buyPet, equipPet, type Wallet } from '../pets/pets'
@@ -27,9 +27,11 @@ export default function App() {
 
   // Every wallet change starts from the latest saved copy, and other tabs' changes are picked up,
   // so two open tabs never overwrite each other's gold or pets.
+  // If saving fails, the stored copy is stale, so keep building on the in-memory wallet instead.
+  const storageWritable = useRef(true)
   const updateWallet = (change: (w: Wallet) => Wallet) => {
-    const next = change(readWallet() ?? wallet)
-    saveWallet(next)
+    const next = change((storageWritable.current && readWallet()) || wallet)
+    storageWritable.current = saveWallet(next)
     setWallet(next)
   }
   useEffect(() => {
