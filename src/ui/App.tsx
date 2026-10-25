@@ -1,15 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { GameMode } from '../engine/game'
 import type { Ship } from '../engine/types'
+import { awardWin, buyPet, equipPet, type Wallet } from '../pets/pets'
 import { THEMES } from '../themes'
 import type { ThemeId } from '../themes/types'
 import { BattleScreen } from './BattleScreen'
 import { PlacementScreen } from './PlacementScreen'
-import { loadSettings, saveSettings, type Settings } from './storage'
+import { WALLET_KEY, loadSettings, loadWallet, readWallet, saveSettings, saveWallet, type Settings } from './storage'
 import { TitleScreen } from './TitleScreen'
+import { TradingPost } from './TradingPost'
 
 type Screen =
   | { name: 'title' }
+  | { name: 'shop' }
   | { name: 'placement'; themeId: ThemeId; mode: GameMode; initialShips?: Ship[] }
   | { name: 'battle'; themeId: ThemeId; mode: GameMode; humanShips: Ship[]; key: number }
 
@@ -18,14 +21,33 @@ export default function App() {
   const [screen, setScreenState] = useState<Screen>({ name: 'title' })
   const [confirmLeave, setConfirmLeave] = useState(false)
 
+  const [wallet, setWallet] = useState<Wallet>(loadWallet)
+
   useEffect(() => saveSettings(settings), [settings])
+
+  // Every wallet change starts from the latest saved copy, and other tabs' changes are picked up,
+  // so two open tabs never overwrite each other's gold or pets.
+  // If saving fails, the stored copy is stale, so keep building on the in-memory wallet instead.
+  const storageWritable = useRef(true)
+  const updateWallet = (change: (w: Wallet) => Wallet) => {
+    const next = change((storageWritable.current && readWallet()) || wallet)
+    storageWritable.current = saveWallet(next)
+    setWallet(next)
+  }
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === null || e.key === WALLET_KEY) setWallet(loadWallet())
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
 
   const setScreen = (next: Screen) => {
     setConfirmLeave(false)
     setScreenState(next)
   }
 
-  const themeId = screen.name === 'title' ? null : screen.themeId
+  const themeId = screen.name === 'title' || screen.name === 'shop' ? null : screen.themeId
   const theme = themeId ? THEMES[themeId] : null
 
   return (
@@ -34,7 +56,7 @@ export default function App() {
         <button type="button" className="app-name" onClick={() => setScreen({ name: 'title' })}>
           AI Battleship
         </button>
-        {theme && screen.name !== 'title' && (
+        {theme && (screen.name === 'placement' || screen.name === 'battle') && (
           <span className="app-theme">
             {theme.name} · {screen.mode === 'special' ? 'Special' : 'Classic'}
           </span>
@@ -73,12 +95,22 @@ export default function App() {
       <main className="app-main">
         {screen.name === 'title' && (
           <TitleScreen
+            gold={wallet.gold}
+            onShop={() => setScreen({ name: 'shop' })}
             mode={settings.mode}
             onModeChange={(mode) => setSettings((s) => ({ ...s, mode }))}
             onChoose={(id) => {
               setSettings((s) => ({ ...s, lastTheme: id }))
               setScreen({ name: 'placement', themeId: id, mode: settings.mode })
             }}
+          />
+        )}
+        {screen.name === 'shop' && (
+          <TradingPost
+            wallet={wallet}
+            onBuy={(id) => updateWallet((w) => buyPet(w, id) ?? w)}
+            onEquip={(id) => updateWallet((w) => equipPet(w, id))}
+            onBack={() => setScreen({ name: 'title' })}
           />
         )}
         {screen.name === 'placement' && theme && (
@@ -99,6 +131,9 @@ export default function App() {
             mode={screen.mode}
             humanShips={screen.humanShips}
             banterOn={settings.banter}
+            pet={wallet.equipped}
+            gold={wallet.gold}
+            onWin={() => updateWallet((w) => awardWin(w, screen.key))}
             onRematch={(ships) =>
               setScreen({ name: 'placement', themeId: screen.themeId, mode: screen.mode, initialShips: ships })
             }

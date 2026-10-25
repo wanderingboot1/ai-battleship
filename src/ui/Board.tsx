@@ -30,6 +30,8 @@ interface BoardProps {
   describeCell?: (cell: Cell) => string
   className?: string
   children?: ReactNode
+  /** Rendered over the first cell of `lastShots`, e.g. a co-captain dropping the shot. */
+  dropper?: ReactNode
 }
 
 function gridArea(cells: readonly Cell[]) {
@@ -165,6 +167,11 @@ export function Board(props: BoardProps) {
           )),
         )}
 
+        {props.dropper && lastShots.length > 0 && (
+          <div key={`drop${shotKey}`} className="pet-drop" style={cellPos(lastShots[0])} aria-hidden="true">
+            {props.dropper}
+          </div>
+        )}
         {props.areas?.map((area) => (
           <div key={area.key} className="area" style={boundsArea(area.cells)} aria-hidden="true">
             <span className="area-badge">{area.label}</span>

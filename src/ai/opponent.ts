@@ -27,8 +27,10 @@ export const DEFAULT_AI_SETTINGS: AISettings = { huntSharpness: 0, targetWeight:
  * (finishing a damaged ship) always plays the highest-scoring cell.
  */
 export function decideAction(view: AIView, rng: Rng, settings: AISettings = DEFAULT_AI_SETTINGS): AIDecision {
-  const { mode, scores } = computeHeatmap(view, settings.targetWeight)
-  const candidates = scores.flatMap((score, cell) => (score > 0 ? [{ cell, score }] : []))
+  const { mode, scores, focus } = computeHeatmap(view, settings.targetWeight)
+  // A positive recon scan means ship squares are known to be in that area, so hunt there first.
+  const pool = mode === 'hunt' && focus.length ? focus : scores.map((_, cell) => cell)
+  const candidates = pool.flatMap((cell) => (scores[cell] > 0 ? [{ cell, score: scores[cell] }] : []))
 
   if (candidates.length === 0) {
     const open = view.marks.flatMap((m, c) => (m === 'none' ? [c] : []))
