@@ -91,3 +91,29 @@ test('ships fill their squares in both orientations', async ({ page }) => {
   expect(carrier.width).toBeGreaterThan(cell.width * 5 * 0.9)
   expect(battleship.height).toBeGreaterThan(cell.height * 4 * 0.9)
 })
+
+test('special mode: pick mode before placing, then use an ability', async ({ page }) => {
+  await page.goto('./')
+  await page.getByRole('radio', { name: /Special/ }).click()
+  await page.getByRole('button', { name: /Classic Naval/ }).click()
+  await page.getByRole('button', { name: /Auto-place/ }).click()
+  await page.getByRole('button', { name: 'Start battle' }).click()
+
+  const cards = page.locator('.ability-card')
+  await expect(cards).toHaveCount(3)
+  await expect(page.locator('.ability-chips li')).toHaveCount(3)
+
+  const card = cards.first()
+  await card.click()
+  // Aim and confirm on open squares until the ability resolves (Broadside needs three).
+  const targets = ['E5', 'C3', 'H8', 'B9', 'J2', 'F6']
+  for (const label of targets) {
+    if (await card.isDisabled()) break
+    const cell = page.getByRole('group', { name: /Enemy waters/ }).locator(`[data-cell="${label}"]`)
+    await cell.click()
+    if (!(await card.isDisabled()) && (await card.getAttribute('aria-pressed')) === 'true') await cell.click()
+  }
+  await expect(card).toBeDisabled()
+  await expect(card).toContainText('Used')
+  await expect(page.getByRole('status').filter({ hasText: /used|spotted|unhit ship/ }).first()).toBeVisible()
+})

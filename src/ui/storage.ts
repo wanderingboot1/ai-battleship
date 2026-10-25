@@ -1,3 +1,4 @@
+import type { GameMode } from '../engine/game'
 import type { ThemeId } from '../themes/types'
 
 const KEY = 'ai-battleship:settings'
@@ -5,9 +6,10 @@ const KEY = 'ai-battleship:settings'
 export interface Settings {
   banter: boolean
   lastTheme: ThemeId
+  mode: GameMode
 }
 
-const DEFAULTS: Settings = { banter: true, lastTheme: 'classic' }
+const DEFAULTS: Settings = { banter: true, lastTheme: 'classic', mode: 'classic' }
 
 export function loadSettings(): Settings {
   try {

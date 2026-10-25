@@ -5,6 +5,13 @@ export const classic: Theme = {
   name: 'Classic Naval',
   tagline: 'Grey steel, a plotting table and a very calm admiral.',
   opponent: { name: 'Admiral Edmund Hale', title: 'Commander, Home Fleet', shortName: 'Hale' },
+  abilityNames: {
+    recon: 'Recon Flight',
+    flare: 'Star Shell',
+    broadside: 'Salvo',
+    depthCharge: 'Depth Charge',
+    torpedo: 'Torpedo Run',
+  },
   shipNames: {
     carrier: 'Carrier',
     battleship: 'Battleship',
@@ -14,6 +21,20 @@ export const classic: Theme = {
   },
   terms: { enemyBoard: 'Enemy waters', ownBoard: 'Your fleet' },
   dialogue: {
+    aiAbility: [
+      '{ability}. Do try to keep up.',
+      'I believe this calls for a {ability}.',
+      'Deploying {ability}. Purely procedural.',
+      'A {ability}, with my compliments.',
+      'Signal the fleet: {ability}.',
+    ],
+    playerAbility: [
+      'A {ability}. How very modern of you.',
+      'Ah. The {ability}. I did wonder when.',
+      'Noted. Your {ability} changes very little.',
+      'Spending a {ability} already? Bold.',
+      'A {ability}. My staff will draft a strongly worded memo.',
+    ],
     intro: [
       'Admiral Hale. Do try to make this interesting.',
       'Fleet in position. Fire when ready. Or whenever, really.',

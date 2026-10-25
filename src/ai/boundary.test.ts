@@ -13,6 +13,7 @@ const ALLOWED_ENGINE_IMPORTS = new Set([
   '../engine/placement',
   '../engine/types',
   '../engine/rng',
+  '../engine/abilities', // pure geometry helpers and ability constants
 ])
 
 it('AI source files only import what is legally available to the AI', () => {

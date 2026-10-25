@@ -8,7 +8,7 @@ import type { DialogueEvent, Theme } from './types'
 export function createLinePicker(theme: Theme, rng: Rng) {
   const bags = new Map<DialogueEvent, string[]>()
   let last: string | null = null
-  return (event: DialogueEvent, vars: { ship?: string } = {}): string => {
+  return (event: DialogueEvent, vars: { ship?: string; ability?: string } = {}): string => {
     let bag = bags.get(event)
     if (!bag || bag.length === 0) {
       bag = [...theme.dialogue[event]]
@@ -21,6 +21,6 @@ export function createLinePicker(theme: Theme, rng: Rng) {
     }
     const line = bag.pop()!
     last = line
-    return line.replaceAll('{ship}', vars.ship ?? 'ship')
+    return line.replaceAll('{ship}', vars.ship ?? 'ship').replaceAll('{ability}', vars.ability ?? 'that')
   }
 }

@@ -91,7 +91,7 @@ describe('sinking and victory', () => {
 
 describe('getAIView', () => {
   it('reveals only shot results, sunk ships and remaining lengths', () => {
-    let s = createMatch(1, { human: fleetA, ai: fleetB }, 'ai')
+    let s = createMatch(1, { human: fleetA, ai: fleetB }, { firstPlayer: 'ai' })
     s = mustFire(s, 'ai', 40) // patrol hit
     s = mustFire(s, 'human', 99)
     s = mustFire(s, 'ai', 41) // patrol sunk

@@ -23,11 +23,27 @@ export const DEFAULT_TARGET_WEIGHT = 40
  */
 export function computeHeatmap(view: AIView, targetWeight = DEFAULT_TARGET_WEIGHT): Heatmap {
   const sunkCells = new Set(view.sunkShips.flatMap((s) => s.cells))
-  const blocked = (c: Cell) => view.marks[c] === 'miss' || sunkCells.has(c)
   const unresolved = new Set<Cell>()
   view.marks.forEach((m, c) => {
     if (m === 'hit' && !sunkCells.has(c)) unresolved.add(c)
   })
+
+  // Scouting intel: a flared square is a known ship square (treated like a hit we
+  // still need to shoot); a recon area with no ship squares left is known empty.
+  const knownEmpty = new Set<Cell>()
+  const reconLeads: { cells: Cell[]; remaining: number }[] = []
+  for (const intel of view.intel ?? []) {
+    if (intel.kind === 'flare') {
+      if (view.marks[intel.cell] === 'none') unresolved.add(intel.cell)
+      continue
+    }
+    const hitsNow = intel.cells.filter((c) => view.marks[c] === 'hit').length
+    const remaining = intel.count - (hitsNow - intel.hitsAtScan)
+    const untargeted = intel.cells.filter((c) => view.marks[c] === 'none')
+    if (remaining <= 0) untargeted.forEach((c) => knownEmpty.add(c))
+    else reconLeads.push({ cells: untargeted, remaining })
+  }
+  const blocked = (c: Cell) => view.marks[c] === 'miss' || sunkCells.has(c) || knownEmpty.has(c)
 
   const mode: SearchMode = unresolved.size > 0 ? 'target' : 'hunt'
   const scores = Array<number>(CELL_COUNT).fill(0)
@@ -45,6 +61,9 @@ export function computeHeatmap(view: AIView, targetWeight = DEFAULT_TARGET_WEIGH
         }
       }
     }
+  }
+  if (mode === 'hunt') {
+    for (const lead of reconLeads) for (const c of lead.cells) scores[c] *= 1 + lead.remaining
   }
   return { mode, scores }
 }

@@ -1,8 +1,20 @@
+import type { GameMode } from '../engine/game'
 import { Avatar } from '../themes/Avatar'
 import { THEMES, THEME_ORDER } from '../themes'
 import type { ThemeId } from '../themes/types'
 
-export function TitleScreen({ onChoose }: { onChoose: (theme: ThemeId) => void }) {
+interface Props {
+  mode: GameMode
+  onModeChange: (mode: GameMode) => void
+  onChoose: (theme: ThemeId) => void
+}
+
+const MODES: { id: GameMode; name: string; blurb: string }[] = [
+  { id: 'classic', name: 'Classic', blurb: 'Standard Battleship: one shot per turn.' },
+  { id: 'special', name: 'Special', blurb: 'Each side gets 3 random single-use abilities.' },
+]
+
+export function TitleScreen({ mode, onModeChange, onChoose }: Props) {
   return (
     <div className="title-screen">
       <header className="title-hero">
@@ -10,7 +22,24 @@ export function TitleScreen({ onChoose }: { onChoose: (theme: ThemeId) => void }
         <p>Sink their fleet before they sink yours.</p>
       </header>
 
-      <h2 className="choose-heading">Choose your opponent</h2>
+      <h2 className="choose-heading">1. Choose a mode</h2>
+      <div className="mode-picker" role="radiogroup" aria-label="Game mode">
+        {MODES.map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            role="radio"
+            aria-checked={mode === m.id}
+            className={`mode-option ${mode === m.id ? 'mode-selected' : ''}`}
+            onClick={() => onModeChange(m.id)}
+          >
+            <span className="mode-name">{m.name}</span>
+            <span className="mode-blurb">{m.blurb}</span>
+          </button>
+        ))}
+      </div>
+
+      <h2 className="choose-heading">2. Choose your opponent</h2>
       <div className="theme-cards">
         {THEME_ORDER.map((id) => {
           const theme = THEMES[id]
@@ -35,6 +64,10 @@ export function TitleScreen({ onChoose }: { onChoose: (theme: ThemeId) => void }
           <li>Take turns firing at one square on the enemy board. Turns alternate, even after a hit.</li>
           <li>● is a miss, ✕ is a hit. A ship sinks when every square of it is hit, and its name is announced.</li>
           <li>Sink all five enemy ships before they sink yours.</li>
+          <li>
+            Special mode: you and your opponent each get 3 single-use abilities. Scouting abilities still let you
+            shoot; attack abilities replace your shot. One ability per turn.
+          </li>
         </ul>
       </details>
     </div>

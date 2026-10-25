@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { GameMode } from '../engine/game'
 import type { Ship } from '../engine/types'
 import { THEMES } from '../themes'
 import type { ThemeId } from '../themes/types'
@@ -9,8 +10,8 @@ import { TitleScreen } from './TitleScreen'
 
 type Screen =
   | { name: 'title' }
-  | { name: 'placement'; themeId: ThemeId; initialShips?: Ship[] }
-  | { name: 'battle'; themeId: ThemeId; humanShips: Ship[]; key: number }
+  | { name: 'placement'; themeId: ThemeId; mode: GameMode; initialShips?: Ship[] }
+  | { name: 'battle'; themeId: ThemeId; mode: GameMode; humanShips: Ship[]; key: number }
 
 export default function App() {
   const [settings, setSettings] = useState<Settings>(loadSettings)
@@ -33,7 +34,11 @@ export default function App() {
         <button type="button" className="app-name" onClick={() => setScreen({ name: 'title' })}>
           AI Battleship
         </button>
-        {theme && <span className="app-theme">{theme.name}</span>}
+        {theme && screen.name !== 'title' && (
+          <span className="app-theme">
+            {theme.name} · {screen.mode === 'special' ? 'Special' : 'Classic'}
+          </span>
+        )}
         <div className="app-bar-actions">
           {screen.name === 'battle' && (
             <>
@@ -68,9 +73,11 @@ export default function App() {
       <main className="app-main">
         {screen.name === 'title' && (
           <TitleScreen
+            mode={settings.mode}
+            onModeChange={(mode) => setSettings((s) => ({ ...s, mode }))}
             onChoose={(id) => {
               setSettings((s) => ({ ...s, lastTheme: id }))
-              setScreen({ name: 'placement', themeId: id })
+              setScreen({ name: 'placement', themeId: id, mode: settings.mode })
             }}
           />
         )}
@@ -80,16 +87,21 @@ export default function App() {
             theme={theme}
             initialShips={screen.initialShips}
             onBack={() => setScreen({ name: 'title' })}
-            onStart={(ships) => setScreen({ name: 'battle', themeId: screen.themeId, humanShips: ships, key: Date.now() })}
+            onStart={(ships) =>
+              setScreen({ name: 'battle', themeId: screen.themeId, mode: screen.mode, humanShips: ships, key: Date.now() })
+            }
           />
         )}
         {screen.name === 'battle' && theme && (
           <BattleScreen
             key={screen.key}
             theme={theme}
+            mode={screen.mode}
             humanShips={screen.humanShips}
             banterOn={settings.banter}
-            onRematch={(ships) => setScreen({ name: 'placement', themeId: screen.themeId, initialShips: ships })}
+            onRematch={(ships) =>
+              setScreen({ name: 'placement', themeId: screen.themeId, mode: screen.mode, initialShips: ships })
+            }
             onChangeTheme={() => setScreen({ name: 'title' })}
           />
         )}
